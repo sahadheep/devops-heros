@@ -1,0 +1,4 @@
+    PID TTY          TIME CMD
+    324 pts/0    00:00:01 bash
+   5672 pts/0    00:00:00 system_info.sh
+   5682 pts/0    00:00:00 ps
