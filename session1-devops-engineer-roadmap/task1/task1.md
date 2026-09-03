@@ -34,21 +34,22 @@ A hard link is another name for the same file data on the filesystem. Both the o
 
 Command used:
 
-bash
+```bash
 ln original.txt hardlink.txt
-
+```
 
 I checked the inode numbers using:
 
-bash
+```bash
 ls -li
-
+```
 
 The output showed that `original.txt` and `hardlink.txt` had the same inode number:
 
-text
+```text
 1507 hardlink.txt
 1507 original.txt
+```
 
 The soft link had a different inode:
 
@@ -96,7 +97,7 @@ The soft link stopped working because it points to the path/name `original.txt`,
 
 ## 4. Difference Between Soft Link and Hard Link
 
-Soft Link                                Hard Link                                       
+ Soft Link                                Hard Link                                       
  Created using `ln -s`                    Created using `ln`                              
  Has a different inode                    Shares the same inode                           
  Points to the file path/name             Points to the same file data/inode              
@@ -106,7 +107,7 @@ Soft Link                                Hard Link
 
 ## 5. Commands Practiced
 
-```bash
+bash
 echo "This is my original file" > original.txt
 ln -s original.txt softlink.txt
 ln original.txt hardlink.txt
@@ -117,9 +118,7 @@ cat hardlink.txt
 cat softlink.txt
 rm original.txt
 rm hardlink.txt softlink.txt
-```
 
 ## Conclusion
 
 A soft link is a reference to another file path, while a hard link is another directory entry for the same inode. The practical deletion test showed that a hard link can still access the file data after the original filename is removed, whereas a soft link becomes broken.
-
