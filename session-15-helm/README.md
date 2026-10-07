@@ -1,127 +1,202 @@
-# Session 15: Helm
+# Session 15: Helm Package Manager for Kubernetes
 
-Managing many Kubernetes YAML files across multiple environments leads to copy-paste errors and configuration drift.
-
-Helm solves this. It is the package manager for Kubernetes.
+A complete hands-on guide and production reference for Helm chart creation, templating, release lifecycle management, atomic upgrades, automated rollbacks, and multi-environment deployments.
 
 ---
 
-## Why Helm?
+# Task 1: Essential Helm Commands
 
-Without Helm, deploying to three environments means three separate sets of YAML files. Change one value and you update three files manually.
+Helm simplifies Kubernetes application deployment by templating YAML files and tracking release revisions as versioned packages.
 
-With Helm, you write one chart. You pass different values for each environment.
-
----
-
-## Topics Covered
-
-| Folder | Topic |
-|--------|-------|
-| `01-what-is-helm/` | What is Helm, installing Helm, first commands |
-| `02-helm-charts/` | What is a Chart, creating and installing charts |
-| `03-chart-structure/` | Chart directory layout, Chart.yaml, values.yaml, templates |
-| `04-chart-yaml/` | Chart.yaml fields, version vs appVersion |
-| `05-values-yaml/` | Default values, overriding with -f and --set |
-| `06-templates/` | Go template syntax, variables, conditionals |
-| `07-install-upgrade/` | helm install, helm upgrade, revision history |
-| `08-rollback/` | helm rollback, --atomic flag, auto rollback |
-| `09-deploying-application/` | Full application deployment: lint, install, upgrade, rollback |
-| `mini-project/` | Deploy the Notes App from scratch using Helm |
-
----
-
-## Core Concepts
-
-**Chart:** A packaged collection of Kubernetes YAML templates with variables. Think of it as a recipe.
-
-**Release:** A running instance of a chart deployed to a cluster. Think of it as the cooked meal.
-
-**Values:** The variables you pass to customize the chart. Think of them as the ingredients.
-
----
-
-## Key Commands
-
+## 1. Repository Management & Search
+- **`helm repo add <name> <url>`**: Registers a remote chart repository.
+- **`helm repo update`**: Fetches the latest chart metadata and versions.
+- **`helm search repo <keyword>`**: Searches registered repositories for packages.
 ```bash
-# Install Helm
-curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
-
-# Create a new chart
-helm create my-chart
-
-# Render templates locally (no cluster needed)
-helm template my-release ./my-chart
-
-# Check chart for errors
-helm lint ./my-chart
-
-# Install a chart
-helm install my-release ./my-chart
-
-# Install with custom values
-helm install my-release ./my-chart -f values-prod.yaml
-
-# List all releases
-helm list
-
-# Upgrade a release
-helm upgrade my-release ./my-chart --set replicaCount=3
-
-# View release history
-helm history my-release
-
-# Rollback to a previous revision
-helm rollback my-release 1
-
-# Remove a release
-helm uninstall my-release
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm repo update
+helm search repo nginx
 ```
 
+## 2. Chart Creation & Validation
+- **`helm create <chart-name>`**: Bootstraps a standard directory layout with sample manifests and values.
+- **`helm lint <chart-path>`**: Evaluates chart templates and YAML structure for syntax errors and best practices.
+- **`helm template <release-name> <chart-path>`**: Renders template YAML locally to stdout without contacting the Kubernetes API.
+```bash
+helm create my-chart
+helm lint ./my-chart
+helm template test-release ./my-chart
+```
+
+## 3. Release Lifecycle (Install, List, Status, Inspect)
+- **`helm install <release-name> <chart-path>`**: Deploys a new release into the cluster.
+- **`helm list`**: Displays all active releases, revisions, chart versions, and namespaces.
+- **`helm status <release-name>`**: Shows deployment health status, deployed resources, and user notes.
+- **`helm get values <release-name>`**: Retrieves only the custom values passed during installation or upgrade.
+- **`helm get manifest <release-name>`**: Dumps the exact rendered Kubernetes YAML applied to the cluster.
+```bash
+helm install notes-dev ./mini-project/notes-chart
+helm list
+helm status notes-dev
+helm get values notes-dev
+```
+
+## 4. Upgrades, History, Rollbacks & Deletion
+- **`helm upgrade <release-name> <chart-path>`**: Applies new configuration values or template updates.
+- **`helm history <release-name>`**: Lists the full audit trail of past revisions, timestamps, and descriptions.
+- **`helm rollback <release-name> <revision>`**: Reverts release state to a designated historical revision.
+- **`helm uninstall <release-name>`**: Removes all Kubernetes objects created by the release.
+```bash
+helm upgrade notes-dev ./mini-project/notes-chart --set replicaCount=3
+helm history notes-dev
+helm rollback notes-dev 1
+helm uninstall notes-dev
+```
+
+![Helm Commands Output](01-helm-commands.png)
+
 ---
 
-## Helm 2 vs Helm 3
+# Task 2: Helm Rollback Workflow
+
+Helm provides atomic release management and instant rollback capabilities when broken configurations or bad container images are deployed.
 
 ```text
-Helm 2: required Tiller (a server pod in the cluster)
-        ran with cluster-admin privileges
-        security risk
-
-Helm 3: no Tiller
-        client-only
-        uses your kubeconfig permissions
-        release state stored as Kubernetes Secrets
+Install (Rev 1)  ──►  Upgrade (Rev 2)  ──►  Upgrade Broken (Rev 3)  ──►  Rollback to 2 (Rev 4)
+  (2 replicas)          (4 replicas)           (ImagePullBackOff)           (Healthy State)
 ```
 
+## Complete Hands-on Step-by-Step Flow
+
+### Step 1: Initial Deployment (Revision 1)
+```bash
+helm install notes-release ./mini-project/notes-chart --set replicaCount=2
+```
+*Status: Deployed with 2 healthy pods.*
+
+### Step 2: Scaling Upgrade (Revision 2)
+```bash
+helm upgrade notes-release ./mini-project/notes-chart --set replicaCount=4
+```
+*Status: Upgraded cleanly to 4 running replicas.*
+
+### Step 3: Bad Upgrade with Broken Tag (Revision 3)
+```bash
+helm upgrade notes-release ./mini-project/notes-chart --set image.tag=invalid-broken-tag
+```
+*Observation: Pods enter `ImagePullBackOff` as kubelet cannot locate the image.*
+
+### Step 4: Execute Rollback
+```bash
+helm rollback notes-release 2
+```
+*Observation: Helm creates Revision 4 containing the exact configuration of Revision 2. Kubernetes terminates failing pods and restores 4 healthy running pods.*
+
+### Step 5: Verify Revision History
+```bash
+helm history notes-release
+```
+
+![Helm Rollback Workflow Output](02-helm-rollback.png)
+
 ---
 
-## Interview Preparation
+# Task 3: Helm Mini-Project (Notes App Production Chart)
 
-**Beginner:**
+A complete production-ready Helm chart implementing parameterization, multi-environment values overrides, health probes, and service endpoints.
 
-Q: What is Helm?
-A: Helm is a package manager for Kubernetes. It packages Kubernetes YAML files into parameterized charts that can be installed, upgraded, and rolled back with single commands.
+## 1. Chart Structure Layout (`mini-project/notes-chart/`)
+```text
+notes-chart/
+├── Chart.yaml              # Chart metadata and versioning
+├── values.yaml             # Development default configuration
+├── values-prod.yaml        # Production environment overrides
+└── templates/              # Parameterized Kubernetes manifests
+    ├── _helpers.tpl        # Reusable template helper macros
+    ├── deployment.yaml     # Application deployment with probes
+    └── service.yaml        # ClusterIP / NodePort service
+```
 
-Q: What is the difference between a Chart and a Release?
-A: A Chart is the packaged template (the recipe). A Release is a running instance of that chart installed in a cluster (the cooked meal).
+## 2. Manifests & Values
 
-**Intermediate:**
+### `Chart.yaml`
+```yaml
+apiVersion: v2
+name: notes-chart
+description: Production Notes Application Helm Chart
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+```
 
-Q: What is the difference between values.yaml and --set?
-A: values.yaml holds the default configuration in version control. --set overrides individual values at runtime. In production pipelines, use separate values files (-f values-prod.yaml) so all configuration is auditable in Git.
+### Development Defaults (`values.yaml`)
+```yaml
+replicaCount: 1
+image:
+  repository: nginx
+  tag: alpine
+  pullPolicy: IfNotPresent
+service:
+  type: ClusterIP
+  port: 80
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+```
 
-Q: What does --atomic do?
-A: During helm upgrade, --atomic auto-rolls back to the previous healthy revision if any pod fails readiness within the timeout period.
+### Production Overrides (`values-prod.yaml`)
+```yaml
+replicaCount: 3
+image:
+  repository: nginx
+  tag: alpine
+  pullPolicy: Always
+service:
+  type: ClusterIP
+  port: 80
+resources:
+  requests:
+    cpu: 200m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+```
 
-**Scenario-Based:**
+### Parameterized Template (`templates/deployment.yaml`)
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "notes-chart.fullname" . }}
+  labels:
+    {{- include "notes-chart.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "notes-chart.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "notes-chart.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.service.port }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+```
 
-Q: You run helm upgrade and it gets stuck in pending-upgrade state. What do you do?
-A: Inspect helm secrets with kubectl get secrets -l owner=helm. Find the stuck pending revision secret and delete it. Then run helm rollback to the last healthy revision.
+## 3. Deployment & Production Verification
+```bash
+helm install notes-prod ./mini-project/notes-chart -f ./mini-project/notes-chart/values-prod.yaml
+kubectl get pods,svc -l app.kubernetes.io/instance=notes-prod
+kubectl exec <pod-name> -- curl -s localhost:80
+```
 
----
-
-## Reference
-
-* **Helm Documentation:** https://helm.sh/docs/
-* **Helm Chart Template Guide:** https://helm.sh/docs/chart_template_guide/
-* **Helm CLI Reference:** https://helm.sh/docs/helm/
+![Helm Mini-Project Output](03-helm-mini-project.png)
