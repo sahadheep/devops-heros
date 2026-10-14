@@ -1,256 +1,93 @@
 # Terraform S3 Bucket Demo
 
-## Project Structure
+A hands-on Infrastructure-as-Code (IaC) demo provisioning an AWS S3 bucket using Terraform.
 
+---
+
+## 1. Project Directory Structure
 ```text
 terraform-s3-demo/
-|
-|-- README.md
-|-- terraform.tf
-|-- providers.tf
-|-- variables.tf
-|-- terraform.tfvars
-|-- main.tf
-|-- outputs.tf
-|-- .gitignore
+├── provider.tf          # Terraform version & AWS provider configuration
+├── variables.tf         # Input variable declarations
+├── terraform.tfvars     # Variable value definitions
+├── main.tf              # AWS S3 bucket resource definition
+├── outputs.tf           # Output values (bucket name, ARN, region)
+└── README.md            # Workflow documentation
 ```
 
-## Architecture
+---
+
+## 2. Terraform Lifecycle Workflow
+
+Execute the full Terraform workflow in sequence:
 
 ```text
-terraform.tf
-     |
-     v
-Provider Configuration
-     |
-     v
-variables.tf
-     |
-     v
-terraform.tfvars
-     |
-     v
-main.tf
-     |
-     v
-aws_s3_bucket.demo
-     |
-     v
-AWS S3 Bucket
-     |
-     v
-outputs.tf
+init ──► fmt ──► validate ──► plan ──► apply ──► show ──► output ──► destroy
 ```
 
-## Prerequisites
-
-Install:
-
-* Terraform
-* AWS CLI
-
-Configure AWS:
-
-```bash
-aws configure
-```
-
-Verify:
-
-```bash
-aws sts get-caller-identity
-```
-
-## Terraform Workflow
-
-### 1. Initialize
-
+### Step 1: Initialize Working Directory
+Downloads the AWS provider plugin and configures backend state:
 ```bash
 terraform init
 ```
+*Expected Output*: `Terraform has been successfully initialized!`
 
-Expected:
-
-```text
-Initializing the provider plugins...
-Terraform has been successfully initialized!
-```
-
-### 2. Format
-
+### Step 2: Format Code Syntax
+Enforces standard Terraform indentation and styling:
 ```bash
 terraform fmt
 ```
 
-### 3. Validate
-
+### Step 3: Validate Configuration
+Checks configuration for internal consistency and syntax correctness:
 ```bash
 terraform validate
 ```
+*Expected Output*: `Success! The configuration is valid.`
 
-Expected:
-
-```text
-Success! The configuration is valid.
-```
-
-### 4. Plan
-
+### Step 4: Generate Execution Plan
+Previews the resources Terraform will create without making live changes:
 ```bash
 terraform plan
 ```
+*Expected Output*: `Plan: 1 to add, 0 to change, 0 to destroy.`
 
-Expected:
-
-```text
-Plan: 1 to add, 0 to change, 0 to destroy.
-```
-
-### 5. Apply
-
+### Step 5: Apply & Provision Infrastructure
+Provisions the S3 bucket on AWS:
 ```bash
-terraform apply
+terraform apply -auto-approve
 ```
-
-Terraform asks:
-
-```text
-Do you want to perform these actions?
-  Only 'yes' will be accepted to approve.
-Enter a value:
-```
-
-Enter:
-
-```text
-yes
-```
-
-Expected:
-
+*Expected Output*:
 ```text
 Apply complete! Resources: 1 added, 0 changed, 0 destroyed.
 Outputs:
-bucket_arn = "arn:aws:s3:::demo"
-bucket_name = "demo"
+bucket_arn = "arn:aws:s3:::sahadheep-terraform-s3-demo-bucket"
+bucket_name = "sahadheep-terraform-s3-demo-bucket"
 bucket_region = "ap-south-1"
 ```
 
-### 6. Check State
-
+### Step 6: Inspect Live State
+Displays detailed resource attributes stored in `terraform.tfstate`:
 ```bash
-terraform state list
+terraform show
 ```
 
-Expected:
-
-```text
-aws_s3_bucket.demo
-```
-
-Inspect the resource:
-
-```bash
-terraform state show aws_s3_bucket.demo
-```
-
-### 7. Check Output
-
+### Step 7: Query Outputs
+Retrieves defined outputs from the state file:
 ```bash
 terraform output
-```
-
-Or:
-
-```bash
 terraform output bucket_name
 ```
+*Expected Output*: `"sahadheep-terraform-s3-demo-bucket"`
 
-Expected:
-
-```text
-"demo"
-```
-
-### 8. Verify Using AWS CLI
-
+### Step 8: Clean Up & Destroy Resources
+Safely destroys all managed resources to prevent AWS charges:
 ```bash
-aws s3 ls
+terraform destroy -auto-approve
 ```
+*Expected Output*: `Destroy complete! Resources: 1 destroyed.`
 
-Or:
+---
 
-```bash
-aws s3api head-bucket --bucket demo
-```
-
-### 9. Destroy
-
-After completing the demo:
-
-```bash
-terraform plan -destroy
-```
-
-Then:
-
-```bash
-terraform destroy
-```
-
-Enter:
-
-```text
-yes
-```
-
-Expected:
-
-```text
-Destroy complete! Resources: 1 destroyed.
-```
-
-## Complete Demo
-
-Run:
-
-```bash
-aws sts get-caller-identity
-terraform init
-terraform fmt
-terraform validate
-terraform plan
-terraform apply
-terraform output
-terraform state list
-terraform state show aws_s3_bucket.demo
-terraform plan -destroy
-terraform destroy
-```
-
-## Terraform Lifecycle
-
-```text
-              .tf files
-                  |
-                  v
-          terraform init
-                  |
-                  v
-          terraform validate
-                  |
-                  v
-            terraform plan
-                  |
-                  v
-           terraform apply
-                  |
-                  v
-             AWS S3
-                  |
-                  v
-          terraform state
-                  |
-                  v
-          terraform destroy
-```
+## 3. Workflow Terminal Output Screenshot
+![Terraform S3 Workflow Output](../01-terraform-workflow.png)

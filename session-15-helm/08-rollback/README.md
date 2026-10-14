@@ -1,167 +1,181 @@
 # Rollback
 
 ```bash
-helm rollback my-app 1
+helm rollback <release-name> <revision>
 ```
 
-If an upgrade breaks your application, rollback returns you to a previous working revision in seconds.
+If an upgrade introduces an error or broken container image, Helm rollback returns the application to a previously verified working revision in seconds.
 
 ---
 
 ## 1. Why Rollback Matters
 
-```text
-Revision 1: Working (1 replica, nginx:1.24)
-Revision 2: Broken  (bad image tag: nginx:doesnotexist)
-```
+In traditional Kubernetes deployments, rolling back requires manually tracking down previous deployment YAML manifests, editing image tags or environment variables, and running `kubectl apply`.
 
-Without Helm rollback, you must manually fix YAML and re-apply.  
-With Helm rollback, you type one command.
+With Helm:
+1. Every release has an immutable history of numbered revisions.
+2. The entire deployment manifest is snapshotted inside Kubernetes Secrets.
+3. A single `helm rollback` command restores the entire application state.
 
 ---
 
-## 2. Setup: Install the Chart
-
-Use the `app-chart` from topic 07.
-
-```bash
-helm install rollback-demo ./app-chart
-```
-
-Expected output:
+## 2. Complete 7-Step Rollback Workflow
 
 ```text
-NAME: rollback-demo
+Install (Rev 1)
+   ↓
+Upgrade (Rev 2)
+   ↓
+Verify (4 Pods Running)
+   ↓
+Upgrade again (Rev 3 - Broken Image Tag)
+   ↓
+Verify (ImagePullBackOff Observed)
+   ↓
+Rollback (Rev 4 <= Rev 2)
+   ↓
+Verify (4 Healthy Pods Restored)
+```
+
+---
+
+### Step 1: Initial Deployment (Revision 1)
+Install the release with 2 replicas:
+```bash
+helm install notes-release ./mini-project/notes-chart --set replicaCount=2
+```
+Expected output:
+```text
+NAME: notes-release
 STATUS: deployed
 REVISION: 1
 ```
 
 ---
 
-## 3. Upgrade to a Broken Version
-
+### Step 2: Scale Up via Upgrade (Revision 2)
+Scale the deployment to 4 replicas:
 ```bash
-helm upgrade rollback-demo ./app-chart --set image.tag=doesnotexist
+helm upgrade notes-release ./mini-project/notes-chart --set replicaCount=4
 ```
-
-Check the pods:
-
-```bash
-kubectl get pods
-```
-
 Expected output:
-
 ```text
-NAME                         READY   STATUS             RESTARTS
-rollback-demo-app-xxxx       0/1     ImagePullBackOff   0
+Release "notes-release" has been upgraded. Happy Helming!
+STATUS: deployed
+REVISION: 2
 ```
-
-The pod fails because the image tag does not exist.
 
 ---
 
-## 4. Check Release History
-
+### Step 3: Verify Scaling
+Verify that all 4 pods are running:
 ```bash
-helm history rollback-demo
+kubectl get pods -l app=notes-release
 ```
-
 Expected output:
-
 ```text
-REVISION   STATUS      DESCRIPTION
-1          superseded  Install complete
-2          deployed    Upgrade complete
+NAME                                   READY   STATUS    RESTARTS   AGE
+notes-release-deploy-58db7c-2xklp      1/1     Running   0          55s
+notes-release-deploy-58db7c-8mqlw      1/1     Running   0          55s
+notes-release-deploy-58db7c-d9vnm      1/1     Running   0          22s
+notes-release-deploy-58db7c-f3qta      1/1     Running   0          22s
 ```
-
-*(Revision 2 is the broken one even though the pod is failing.)*
 
 ---
 
-## 5. Rollback to Revision 1
-
+### Step 4: Upgrade Again with Broken Image Tag (Revision 3)
+Deploy a broken image tag:
 ```bash
-helm rollback rollback-demo 1
+helm upgrade notes-release ./mini-project/notes-chart --set image.tag=invalid-broken-tag
+```
+Expected output:
+```text
+Release "notes-release" has been upgraded. Happy Helming!
+STATUS: deployed
+REVISION: 3
 ```
 
-Expected output:
+---
 
+### Step 5: Verify Broken State
+Check the pod status:
+```bash
+kubectl get pods -l app=notes-release
+```
+Expected output:
+```text
+NAME                                   READY   STATUS             RESTARTS   AGE
+notes-release-deploy-58db7c-2xklp      1/1     Running            0          3m
+notes-release-deploy-7c8fa1-7xk4p      0/1     ImagePullBackOff   0          30s
+notes-release-deploy-7c8fa1-m21qz      0/1     ImagePullBackOff   0          30s
+```
+*Failure analysis*: Pods cannot pull the non-existent image and fail with `ImagePullBackOff`.
+
+---
+
+### Step 6: Rollback to Revision 2
+Revert to the stable revision 2:
+```bash
+helm rollback notes-release 2
+```
+Expected output:
 ```text
 Rollback was a success! Happy Helming!
 ```
 
 ---
 
-## 6. Check Pods After Rollback
-
+### Step 7: Verify Rollback Succeeded
+Confirm release history and running pods:
 ```bash
-kubectl get pods
+helm history notes-release
+kubectl get pods -l app=notes-release
 ```
-
 Expected output:
-
 ```text
-NAME                         READY   STATUS    RESTARTS
-rollback-demo-app-yyyy       1/1     Running   0
-```
+REVISION   UPDATED                    STATUS       CHART              APP VERSION   DESCRIPTION
+1          Wed Oct 14 14:20:00 2026   superseded   notes-chart-0.1.0  1.0           Install complete
+2          Wed Oct 14 14:22:15 2026   superseded   notes-chart-0.1.0  1.0           Upgrade complete
+3          Wed Oct 14 14:24:30 2026   superseded   notes-chart-0.1.0  1.0           Upgrade complete
+4          Wed Oct 14 14:26:05 2026   deployed     notes-chart-0.1.0  1.0           Rollback to 2
 
-The pod is healthy again. Helm re-deployed revision 1's configuration.
+NAME                                   READY   STATUS    RESTARTS   AGE
+notes-release-deploy-58db7c-2xklp      1/1     Running   0          4m
+notes-release-deploy-58db7c-8mqlw      1/1     Running   0          4m
+notes-release-deploy-58db7c-d9vnm      1/1     Running   0          3m
+notes-release-deploy-58db7c-f3qta      1/1     Running   0          3m
+```
 
 ---
 
-## 7. History After Rollback
+## 3. Terminal Output Screenshot
 
-```bash
-helm history rollback-demo
-```
-
-Expected output:
-
-```text
-REVISION   STATUS      DESCRIPTION
-1          superseded  Install complete
-2          superseded  Upgrade complete
-3          deployed    Rollback to 1
-```
-
-Rollback creates a new revision (3). It does not delete the history.
+![Helm Rollback Workflow Output](../02-helm-rollback.png)
 
 ---
 
-## 8. Use --atomic for Auto Rollback
+## 4. Production Best Practice: `--atomic` Flag
 
-During upgrade, use `--atomic` to auto-rollback on failure:
+To automate rollbacks in CI/CD pipelines without human intervention:
 
 ```bash
-helm upgrade rollback-demo ./app-chart \
-  --set image.tag=doesnotexist \
+helm upgrade notes-release ./mini-project/notes-chart \
+  --set image.tag=invalid-broken-tag \
   --atomic \
-  --timeout 60s
+  --timeout 2m
 ```
 
-If pods do not become ready within 60 seconds, Helm automatically rolls back.
+If the pods do not reach `Ready` status before the 2-minute timeout expires, Helm automatically triggers a rollback to the previous revision.
 
 ---
 
-## Clean Up
+## 5. Cleanup
 
 ```bash
-helm uninstall rollback-demo
-```
-
----
-
-## Key Learning
-
-```text
-helm history <release>     = list all revisions
-helm rollback <release> N  = go back to revision N
---atomic                   = auto rollback if upgrade fails
+helm uninstall notes-release
 ```
 
 ---
 
 ## Reference
-
-* **Helm rollback:** https://helm.sh/docs/helm/helm_rollback/
+* **Helm Rollback Reference:** https://helm.sh/docs/helm/helm_rollback/

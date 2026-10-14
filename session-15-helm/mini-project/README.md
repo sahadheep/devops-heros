@@ -13,6 +13,7 @@ notes-chart/
     deployment.yaml
     service.yaml
     configmap.yaml
+    NOTES.txt
 ```
 
 The application is a simple nginx pod that we use to represent a Notes web app.
@@ -153,6 +154,33 @@ spec:
     - port: {{ .Values.service.port }}
       targetPort: {{ .Values.service.port }}
       nodePort: {{ .Values.service.nodePort }}
+```
+
+---
+
+## Step 7b: templates/NOTES.txt
+
+`notes-chart/templates/NOTES.txt`:
+
+```text
+Thank you for installing {{ .Chart.Name }}!
+
+Your release is named {{ .Release.Name }}.
+
+Configuration Details:
+- App Name: {{ .Values.app.name }}
+- Environment: {{ .Values.app.environment }}
+- Replicas: {{ .Values.replicaCount }}
+- Service Port: {{ .Values.service.port }}
+- Service NodePort: {{ .Values.service.nodePort }}
+
+To access the application:
+1. Minikube Service URL:
+   minikube service {{ .Release.Name }}-svc --url
+
+2. Port-forward to local port 8080:
+   kubectl port-forward svc/{{ .Release.Name }}-svc 8080:{{ .Values.service.port }}
+   curl http://localhost:8080
 ```
 
 ---
@@ -331,6 +359,12 @@ All resources are gone.
 [PASS] Rolled back to a healthy revision
 [PASS] Cleaned up with helm uninstall
 ```
+
+---
+
+## Terminal Output Screenshot
+
+![Helm Mini-Project Output](../03-helm-mini-project.png)
 
 ---
 
