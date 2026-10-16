@@ -24,6 +24,7 @@ test.db
 # OS files
 .DS_Store
 Thumbs.db
+desktop.ini
 
 # Terraform
 .terraform/
@@ -32,3 +33,7 @@ Thumbs.db
 crash.log
 *.tfplan
 
+# Milestone Notes & Draft Proofs (Keep repo strictly assignment-focused)
+MILESTONE-*.md
+MILESTONE-*-NOTES.md
+COMPLETION-PROOF.md

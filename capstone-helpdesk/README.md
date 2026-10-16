@@ -90,9 +90,9 @@ capstone-helpdesk/
 ├── troubleshooting/          # Faulty manifests & step-by-step diagnostic guide
 ├── scripts/                  # Load-testing helpers (bash & powershell)
 ├── .github/workflows/        # Automated CI/CD & DevSecOps pipeline
-├── DEMO-GUIDE.md             # 15-step final presentation evaluation script
-└── MILESTONE-[1-8]-NOTES.md  # Detailed milestone delivery documentation
+└── DEMO-GUIDE.md             # 15-step final presentation evaluation script
 ```
+
 
 ---
 

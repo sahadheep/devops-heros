@@ -65,3 +65,9 @@ crash.log
 *.swp
 *.swo
 *~
+
+# Milestone Notes & Draft Proofs (Keep repository strictly assignment-focused)
+MILESTONE-*.md
+MILESTONE-*-NOTES.md
+COMPLETION-PROOF.md
+

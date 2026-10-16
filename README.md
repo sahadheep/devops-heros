@@ -22,10 +22,10 @@ The complete production-grade SaaS support ticket and incident management platfo
 * **Infrastructure as Code:** Terraform AWS VPC + EKS Kubernetes cluster in `ap-south-1`
 * **Kubernetes Orchestration:** Helm v3 package, Ingress routing, PostgreSQL 5Gi PVC, and Horizontal Pod Autoscaler (HPA)
 * **Observability:** Prometheus `/metrics` scraping via CoreOS `ServiceMonitor` + Grafana
-* **Documentation & Proofs:**
-  * 📋 [100-Point Rubric Completion Proof & Evidence Log](./capstone-helpdesk/COMPLETION-PROOF.md)
+* **Documentation & Demo Guide:**
   * 🎯 [15-Step Evaluator Demo Guide](./capstone-helpdesk/DEMO-GUIDE.md)
-  * 📘 [Milestones 1 through 8 Engineering Notes](./capstone-helpdesk/)
+  * 📘 [Master Architecture & Run Guide](./capstone-helpdesk/README.md)
+
 
 ---
 
