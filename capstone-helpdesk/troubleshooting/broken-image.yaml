@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: helpdesk-broken-image
+  namespace: helpdesk
+  labels:
+    lab: troubleshooting
+    scenario: broken-image
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: helpdesk-broken-image
+  template:
+    metadata:
+      labels:
+        app: helpdesk-broken-image
+    spec:
+      containers:
+        - name: backend
+          # Deliberately non-existent tag to trigger ImagePullBackOff
+          image: ghcr.io/sahadheep/helpdesk-backend:v999.non-existent
+          ports:
+            - containerPort: 8000
