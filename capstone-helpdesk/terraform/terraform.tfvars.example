@@ -1,0 +1,8 @@
+# AWS Region Configuration
+aws_region   = "ap-south-1"
+
+# VPC Configuration
+vpc_cidr     = "10.30.0.0/16"
+
+# EKS Cluster Name
+cluster_name = "helpdesk-eks-cluster"
