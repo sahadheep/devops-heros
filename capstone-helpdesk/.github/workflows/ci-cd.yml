@@ -1,0 +1,131 @@
+name: HelpDesk Pro CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  # ==========================================
+  # STAGE 1: AUTOMATED TESTING & BUILD GATES
+  # ==========================================
+  test:
+    name: Run Unit Tests & Build Assets
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install Backend Dependencies
+        working-directory: backend
+        run: pip install -r requirements.txt
+
+      - name: Run Backend Pytest Suite
+        working-directory: backend
+        run: pytest -v
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: frontend/package.json
+
+      - name: Install Frontend Dependencies & Build Bundle
+        working-directory: frontend
+        run: |
+          npm ci || npm install
+          npm run build
+
+  # ==========================================
+  # STAGE 2: DOCKER BUILD, TRIVY SCAN & GHCR PUSH
+  # ==========================================
+  build-scan-push:
+    name: Build, Scan & Push Containers
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Docker Images
+        run: |
+          docker build -t ghcr.io/${{ github.repository_owner }}/helpdesk-backend:${{ github.sha }} ./backend
+          docker build -t ghcr.io/${{ github.repository_owner }}/helpdesk-frontend:${{ github.sha }} ./frontend
+
+      - name: Trivy Security Scan — Backend Container
+        uses: aquasecurity/trivy-action@0.30.0
+        with:
+          image-ref: ghcr.io/${{ github.repository_owner }}/helpdesk-backend:${{ github.sha }}
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: '1'
+
+      - name: Trivy Security Scan — Frontend Container
+        uses: aquasecurity/trivy-action@0.30.0
+        with:
+          image-ref: ghcr.io/${{ github.repository_owner }}/helpdesk-frontend:${{ github.sha }}
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: '1'
+
+      - name: Push Containers to GHCR
+        if: github.ref == 'refs/heads/main'
+        run: |
+          docker push ghcr.io/${{ github.repository_owner }}/helpdesk-backend:${{ github.sha }}
+          docker push ghcr.io/${{ github.repository_owner }}/helpdesk-frontend:${{ github.sha }}
+
+  # ==========================================
+  # STAGE 3: KUBERNETES HELM DEPLOYMENT
+  # ==========================================
+  deploy:
+    name: Deploy to Kubernetes Cluster via Helm
+    if: github.ref == 'refs/heads/main'
+    needs: build-scan-push
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v4
+
+      - name: Configure kubectl
+        env:
+          KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
+        run: |
+          mkdir -p ~/.kube
+          echo "$KUBE_CONFIG_DATA" | base64 -d > ~/.kube/config
+
+      - name: Deploy / Upgrade Helm Release
+        run: |
+          helm upgrade --install helpdesk ./helm/helpdesk \
+            --namespace helpdesk \
+            --create-namespace \
+            --set backend.image=ghcr.io/${{ github.repository_owner }}/helpdesk-backend \
+            --set backend.tag=${{ github.sha }} \
+            --set frontend.image=ghcr.io/${{ github.repository_owner }}/helpdesk-frontend \
+            --set frontend.tag=${{ github.sha }}
