@@ -8,16 +8,16 @@ on:
   workflow_dispatch:
 
 jobs:
-  # ==========================================
-  # STAGE 1: AUTOMATED TESTING & BUILD GATES
-  # ==========================================
-  test:
-    name: Run Unit Tests & Build Assets
+  ci-pipeline:
+    name: Test, Build & Security Scan
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      # ==========================================
+      # 1. AUTOMATED TESTING GATE (PYTEST)
+      # ==========================================
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
@@ -33,6 +33,9 @@ jobs:
         working-directory: capstone-helpdesk/backend
         run: pytest -v
 
+      # ==========================================
+      # 2. FRONTEND PRODUCTION BUILD
+      # ==========================================
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -46,17 +49,9 @@ jobs:
           npm ci || npm install
           npm run build
 
-  # ==========================================
-  # STAGE 2: DOCKER BUILD & AQUA TRIVY SCAN
-  # ==========================================
-  build-and-security-scan:
-    name: Docker Build & Aqua Trivy Security Scan
-    needs: test
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
+      # ==========================================
+      # 3. DOCKER CONTAINER BUILDS
+      # ==========================================
       - name: Build Backend Docker Image
         run: |
           docker build -t helpdesk-backend:${{ github.sha }} ./capstone-helpdesk/backend
@@ -65,18 +60,15 @@ jobs:
         run: |
           docker build -t helpdesk-frontend:${{ github.sha }} ./capstone-helpdesk/frontend
 
-      - name: Trivy Vulnerability Scan — Backend Container
-        uses: aquasecurity/trivy-action@0.30.0
-        with:
-          image-ref: helpdesk-backend:${{ github.sha }}
-          severity: HIGH,CRITICAL
-          ignore-unfixed: true
-          exit-code: '0'
+      # ==========================================
+      # 4. AQUA TRIVY CONTAINER SECURITY SCAN
+      # ==========================================
+      - name: Run Aqua Trivy Security Scan — Backend
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+            aquasec/trivy:latest image --severity HIGH,CRITICAL --ignore-unfixed helpdesk-backend:${{ github.sha }}
 
-      - name: Trivy Vulnerability Scan — Frontend Container
-        uses: aquasecurity/trivy-action@0.30.0
-        with:
-          image-ref: helpdesk-frontend:${{ github.sha }}
-          severity: HIGH,CRITICAL
-          ignore-unfixed: true
-          exit-code: '0'
+      - name: Run Aqua Trivy Security Scan — Frontend
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+            aquasec/trivy:latest image --severity HIGH,CRITICAL --ignore-unfixed helpdesk-frontend:${{ github.sha }}
