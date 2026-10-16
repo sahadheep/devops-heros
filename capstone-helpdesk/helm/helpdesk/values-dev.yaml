@@ -1,9 +1,13 @@
 ingress:
-  enabled: true
+  enabled: false
   host: helpdesk.local
 
 hpa:
   enabled: false
+
+monitoring:
+  serviceMonitor:
+    enabled: false
 
 backend:
   replicaCount: 1
