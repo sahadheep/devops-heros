@@ -1,0 +1,12 @@
+ingress:
+  enabled: true
+  host: helpdesk.local
+
+hpa:
+  enabled: false
+
+backend:
+  replicaCount: 1
+
+frontend:
+  replicaCount: 1
