@@ -19,6 +19,8 @@ desktop.ini
 *.rar
 *.7z
 *.iso
+*.mp4
+*.mov
 
 # Node & Frontend Dependencies & Build Outputs
 node_modules/

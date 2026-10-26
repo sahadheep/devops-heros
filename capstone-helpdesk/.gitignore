@@ -7,6 +7,8 @@ venv/
 dist/
 build/
 *.egg-info/
+*.mp4
+*.mov
 
 # Python cache & test databases
 __pycache__/
@@ -32,6 +34,8 @@ desktop.ini
 *.tfstate.*
 crash.log
 *.tfplan
+tfplan
+.terraform.lock.hcl
 
 # Milestone Notes & Draft Proofs (Keep repo strictly assignment-focused)
 MILESTONE-*.md

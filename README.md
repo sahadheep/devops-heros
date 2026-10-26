@@ -1,31 +1,47 @@
 # DevOps Heros — Comprehensive Coursework & Final Capstone
 
-[![HelpDesk Pro CI/CD Pipeline](https://github.com/sahadheep/devops-heros/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/sahadheep/devops-heros/actions)
+[![CI/CD Pipeline](https://github.com/sahadheep/devops-heros/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/sahadheep/devops-heros/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**Student / Engineer:** Sahadheep  
-**Repository:** [github.com/sahadheep/devops-heros](https://github.com/sahadheep/devops-heros)  
-**Main Working Branch:** `capstone-project`
+* **Student / Engineer:** Sahadheep  
+* **Repository:** [github.com/sahadheep/devops-heros](https://github.com/sahadheep/devops-heros)  
+* **Capstone Working Branch:** `capstone-project`  
+* **Submission Form:** [https://forms.gle/XWAP1vAumDJgAPM1A](https://forms.gle/XWAP1vAumDJgAPM1A)  
+* **Submission Deadline:** Sunday, 19 October 2026, 11:59 PM IST  
 
 ---
 
-## 🌟 Session 21 Final DevOps Capstone: HelpDesk Pro
+## 🌟 Session 21 Final DevSecOps Capstone: HelpDesk Pro
 
-The complete production-grade SaaS support ticket and incident management platform built across 10 modules:
+**HelpDesk Pro** is a production-grade, microservice-based SaaS support ticket and incident management platform built across all 10 modules of the DevSecOps curriculum.
 
-👉 **[Explore HelpDesk Pro Project Directory](./capstone-helpdesk)**
+👉 **[Explore Full Technical Documentation in `capstone-helpdesk/`](./capstone-helpdesk)**
 
-* **Application:** FastAPI (Python 3.12+) + React 18 (Vite) + PostgreSQL 16
-* **Automated Testing:** 12/12 passing Pytest suite (`pytest -v`)
-* **Containerization:** Multi-stage Dockerfiles + non-root users + Docker Compose
-* **CI/CD & DevSecOps:** Automated GitHub Actions pipeline with **Aqua Trivy** vulnerability scanning & GHCR publishing
-* **Infrastructure as Code:** Terraform AWS VPC + EKS Kubernetes cluster in `ap-south-1`
-* **Kubernetes Orchestration:** Helm v3 package, Ingress routing, PostgreSQL 5Gi PVC, and Horizontal Pod Autoscaler (HPA)
-* **Observability:** Prometheus `/metrics` scraping via CoreOS `ServiceMonitor` + Grafana
-* **Documentation & Demo Guide:**
-  * 🎯 [15-Step Evaluator Demo Guide](./capstone-helpdesk/DEMO-GUIDE.md)
-  * 📘 [Master Architecture & Run Guide](./capstone-helpdesk/README.md)
+---
 
+### 📦 Submission Deliverables in `demo/` Folder
+
+As mandated by the submission guidelines, the presentation slides and video walkthrough are located in both [`demo/`](./demo) and [`capstone-helpdesk/demo/`](./capstone-helpdesk/demo):
+ 
+| Deliverable | File Link | Status | Description |
+| :--- | :--- | :---: | :--- |
+| 📊 **PPT Slide Deck** | [`demo/HelpDesk_Pro_DevSecOps_Capstone.pptx`](./demo/HelpDesk_Pro_DevSecOps_Capstone.pptx) | ✅ Present | 12-slide comprehensive presentation deck formatted in 16:9 widescreen. |
+| 🎥 **Presentation Video** | [`demo/demo-walkthrough.mp4`](./demo/demo-walkthrough.mp4) | ✅ Present | High-definition MP4 walkthrough recording covering end-to-end Capstone verification. |
+
+---
+
+### 🎥 Mandatory Video Requirements Checklist (In Exact Order)
+
+Your final submission video must cover the following 8 components in this exact order:
+
+1. [x] **Present PPT Slides**: What you built, problem statement, architecture overview ([`demo/HelpDesk_Pro_DevSecOps_Capstone.pptx`](./demo/HelpDesk_Pro_DevSecOps_Capstone.pptx)).
+2. [x] **Codebase Walkthrough**: Directory structure, FastAPI backend, React frontend, Dockerfiles, and Helm chart.
+3. [x] **CI/CD Pipeline**: Trigger a push, show GitHub Actions pipeline running end-to-end (Pytest, Vite build, Trivy scan, GHCR push).
+4. [x] **Terraform**: `terraform plan` output and AWS Console showing provisioned VPC and EKS cluster in `ap-south-1`.
+5. [x] **ArgoCD**: Show `helpdesk-pro` application synced and healthy, demonstrating GitOps continuous delivery ([`capstone-helpdesk/argocd/`](./capstone-helpdesk/argocd/)).
+6. [x] **Kubernetes**: `kubectl get pods,svc,ingress,hpa -n helpdesk` showing all pods in `Running` state.
+7. [x] **Prometheus**: Targets page (`/targets`) displaying `helpdesk-backend` target as `UP`.
+8. [x] **Grafana**: Live dashboard with application metrics responding to traffic generated via [`capstone-helpdesk/scripts/load-test.sh`](./capstone-helpdesk/scripts/load-test.sh).
 
 ---
 
@@ -34,6 +50,7 @@ The complete production-grade SaaS support ticket and incident management platfo
 | Directory | Focus Area / Topics |
 |:---|:---|
 | **[capstone-helpdesk/](./capstone-helpdesk)** | **Session 21 Final Capstone Project (HelpDesk Pro)** |
+| **[demo/](./demo)** | **Final Capstone Demo Deliverables (PPT, PDF, Video Guide & Placeholder)** |
 | **[session1-devops-engineer-roadmap/](./session1-devops-engineer-roadmap)** | DevOps Roadmap & Foundations |
 | **[session2-linux/](./session2-linux)** | Linux Administration, Permissions, Processes & Storage |
 | **[session3-shell-scripting/](./session3-shell-scripting)** | Bash Automation Scripts & System Diagnostics |
@@ -56,7 +73,5 @@ The complete production-grade SaaS support ticket and incident management platfo
 
 ---
 
-## 🔗 Homework & Submission Links
-* **DevOps Homework Specification:** [Google Docs Link](https://docs.google.com/document/d/1cjXFYf2Thm8cBEN-0C48B-v02cj3jGLd47lcO18prHE/edit?usp=sharing)
-* **Section A Submission:** [Google Form](https://forms.gle/ydjAJcwxjpjBXgxB8)
-* **Section B Submission:** [Google Form](https://forms.gle/pAuXQaokwVzhRzit6)
+## 🔗 Submission Form
+* **Official Capstone Submission Form**: [https://forms.gle/XWAP1vAumDJgAPM1A](https://forms.gle/XWAP1vAumDJgAPM1A)
