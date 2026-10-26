@@ -26,7 +26,7 @@ As mandated by the submission guidelines, the presentation slides and video walk
 | Deliverable | File Link | Status | Description |
 | :--- | :--- | :---: | :--- |
 | 📊 **PPT Slide Deck** | [`demo/HelpDesk_Pro_DevSecOps_Capstone.pptx`](./demo/HelpDesk_Pro_DevSecOps_Capstone.pptx) | ✅ Present | 12-slide comprehensive presentation deck formatted in 16:9 widescreen. |
-| 🎥 **Presentation Video** | [`demo/demo-walkthrough.mp4`](./demo/demo-walkthrough.mp4) | ✅ Present | High-definition MP4 walkthrough recording covering end-to-end Capstone verification. |
+| 🎥 **Presentation Video** | [Google Drive Video Walkthrough](https://drive.google.com/file/d/1OaFILXn0B7LWQSUzXwGXwd0pvizraccb/view?usp=drive_link) | ✅ Present | Full HD video walkthrough covering the 8 rubric evaluation steps in exact sequence. |
 
 ---
 

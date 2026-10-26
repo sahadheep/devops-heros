@@ -18,7 +18,7 @@
 
 ### 🌟 Submission Deliverables Quick Links
 * 📊 **Presentation Slides (PPTX)**: [`demo/HelpDesk_Pro_DevSecOps_Capstone.pptx`](./demo/HelpDesk_Pro_DevSecOps_Capstone.pptx)
-* 🎥 **Live Walkthrough Video**: [`demo/demo-walkthrough.mp4`](./demo/demo-walkthrough.mp4)
+* 🎥 **Live Walkthrough Video**: [Google Drive Video Walkthrough](https://drive.google.com/file/d/1OaFILXn0B7LWQSUzXwGXwd0pvizraccb/view?usp=drive_link)
 * 🎯 **15-Step Evaluator Proof**: [`DEMO-GUIDE.md`](./DEMO-GUIDE.md) & [`COMPLETION-PROOF.md`](./COMPLETION-PROOF.md)
 
 ---
